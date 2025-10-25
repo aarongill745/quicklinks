@@ -16,6 +16,10 @@
       {
         "command": "quicklinks.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "quicklinks.addLink",
+        "title": "Add Link"
       }
     ]
   },
