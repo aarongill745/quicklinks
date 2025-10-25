@@ -42,6 +42,13 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		});
 	});
+
+    const printLinks = vscode.commands.registerCommand('quicklinks.printLinks', () => {
+        const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
+        const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []); 
+        console.log(globalLinks, workspaceLinks);
+    });
+    
 	context.subscriptions.push(disposable);
 }
 

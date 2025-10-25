@@ -20,6 +20,10 @@
       {
         "command": "quicklinks.addLink",
         "title": "Add Link"
+      },
+      {
+        "command": "quicklinks.printLinks",
+        "title": "Print Links"
       }
     ]
   },
