@@ -1,24 +1,40 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { link } from 'fs';
 import { QuickLink } from './Types';
 import * as vscode from 'vscode';
+import { title } from 'process';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    // We only want to actually retrieve these once at the start, but have them updated when we add/ delete.
+    const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
+    const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []);
+    
+    const showLinks = vscode.commands.registerCommand('quicklinks.showLinks', async () => {  
+        let links = [...globalLinks, ...workspaceLinks];
+        links.forEach((link) => {
+            console.log(link);
+        })
+        const items = links.map((link) => ({
+            label: link.title,
+            detail: link.description,
+            link: link.url
+        }));
+        const selected = await vscode.window.showQuickPick(items, {
+            matchOnDetail: true,
+            matchOnDescription: true,
+        });
+
+        if (selected) {
+           vscode.env.openExternal(vscode.Uri.parse(selected.link));
+        };
+    });
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "quicklinks" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('quicklinks.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from QuickLinks!');
-	});
 
 	const addLink = vscode.commands.registerCommand('quicklinks.addLink', () => {
 		console.log("Adding link");
@@ -30,7 +46,12 @@ export function activate(context: vscode.ExtensionContext) {
 			{enableScripts: true}
 		);
 		panel.webview.html = getAddLinkWebview();
-		panel.webview.onDidReceiveMessage((newLink) => {
+		panel.webview.onDidReceiveMessage((message) => {
+            const newLink: QuickLink = {
+                ...message.data,
+                url: message.data.link,
+                scope: message.scope
+            };
 			if (newLink.scope === 'global') {
 				const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []); 
 				globalLinks.push(newLink);
@@ -48,8 +69,14 @@ export function activate(context: vscode.ExtensionContext) {
         const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []); 
         console.log(globalLinks, workspaceLinks);
     });
-    
-	context.subscriptions.push(disposable);
+
+    // This will be changed to a UI containing all global links + workspace links
+    const resetQuickLinks = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
+        context.globalState.update('myQuickLinks', []);
+        context.workspaceState.update('myQuickLinks', []);
+        console.log("All links have been deleted");
+    });
+    context.subscriptions.push(showLinks);
 }
 
 function getAddLinkWebview() {

@@ -24,6 +24,14 @@
       {
         "command": "quicklinks.printLinks",
         "title": "Print Links"
+      },
+      {
+        "command": "quicklinks.resetLinks",
+        "title": "Reset Links"
+      },
+      {
+        "command": "quicklinks.showLinks",
+        "title": "Show Links"
       }
     ]
   },
