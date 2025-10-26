@@ -9,25 +9,33 @@ import { title } from 'process';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     // We only want to actually retrieve these once at the start, but have them updated when we add/ delete.
-    const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
-    const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []);
+    
     
     const showLinks = vscode.commands.registerCommand('quicklinks.showLinks', async () => {  
-        let links = [...globalLinks, ...workspaceLinks];
-        links.forEach((link) => {
-            console.log(link);
-        })
-        const items = links.map((link) => ({
-            label: link.title,
-            detail: link.description,
-            link: link.url
-        }));
+        const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
+        const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []);
+        
+        const items: (vscode.QuickPickItem & { link?: string })[] = [
+            {label: "Global", kind: vscode.QuickPickItemKind.Separator},
+            ...globalLinks.map((link) => ({
+                label: link.title,
+                detail: link.description,
+                iconPath: new vscode.ThemeIcon('link-external'),
+                link: link.url
+            })),
+            {label: "Workspace", kind: vscode.QuickPickItemKind.Separator},
+            ...workspaceLinks.map((link) => ({
+                label: link.title,
+                detail: link.description,
+                iconPath: new vscode.ThemeIcon('link-external'),
+                link: link.url}))
+        ];
+        
         const selected = await vscode.window.showQuickPick(items, {
             matchOnDetail: true,
             matchOnDescription: true,
         });
-
-        if (selected) {
+        if (selected && selected.link) {
            vscode.env.openExternal(vscode.Uri.parse(selected.link));
         };
     });
@@ -47,20 +55,27 @@ export function activate(context: vscode.ExtensionContext) {
 		);
 		panel.webview.html = getAddLinkWebview();
 		panel.webview.onDidReceiveMessage((message) => {
-            const newLink: QuickLink = {
-                ...message.data,
-                url: message.data.link,
-                scope: message.scope
-            };
-			if (newLink.scope === 'global') {
-				const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []); 
-				globalLinks.push(newLink);
-				context.globalState.update('myQuickLinks', globalLinks);
-			} else {
-				const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks',[]);
-				workspaceLinks.push(newLink);
-				context.workspaceState.update('myQuickLinks', workspaceLinks);
-			}
+            switch (message.command) {
+                case 'submit':
+                    const newLink: QuickLink = {
+                        ...message.data,
+                        url: message.data.link,
+                        scope: message.scope
+                    };
+                    if (newLink.scope === 'global') {
+                        const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []); 
+                        globalLinks.push(newLink);
+                        context.globalState.update('myQuickLinks', globalLinks);
+                    } else {
+                        const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks',[]);
+                        workspaceLinks.push(newLink);
+                        context.workspaceState.update('myQuickLinks', workspaceLinks);
+                    }
+                    break;
+                case 'scopeChanged':
+                    console.log("scope has changed", message.scope);
+                    break;
+            }
 		});
 	});
 
@@ -71,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // This will be changed to a UI containing all global links + workspace links
-    const resetQuickLinks = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
+    const resetLinks = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
         context.globalState.update('myQuickLinks', []);
         context.workspaceState.update('myQuickLinks', []);
         console.log("All links have been deleted");
@@ -84,6 +99,50 @@ function getAddLinkWebview() {
     <html>
     <head>
         <style>
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 40px;
+                height: 20px;
+            }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: var(--vscode-input-background);
+                transition: 0.3s;
+                border-radius: 20px;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 14px;
+                width: 14px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: 0.3s;
+                border-radius: 50%;
+            }
+
+            input:checked + .slider {
+                background-color: var(--vscode-button-background);
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(20px);
+            }
             body {
                 display: flex;
                 justify-content: center;
@@ -182,6 +241,10 @@ function getAddLinkWebview() {
                     Description (optional)
                     <textarea id="description" placeholder="Optional description"></textarea>
                 </label>
+                <label class="switch">
+                    <input type="checkbox" id="myToggle">
+                    <span class="slider"></span>
+                </label>        
                 <button type="submit">Add Quick Link</button>
             </form>
         </div>
@@ -196,6 +259,14 @@ function getAddLinkWebview() {
                         link: document.getElementById('link').value,
                         description: document.getElementById('description').value,
                     }
+                });
+            });
+            const toggle = document.getElementById('myToggle');
+  
+            toggle.addEventListener('change', (e) => {
+                vscode.postMessage({
+                command: 'toggleChanged',
+                value: e.target.checked
                 });
             });
         </script>
