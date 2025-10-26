@@ -15,23 +15,23 @@
     "commands": [
       {
         "command": "quicklinks.helloWorld",
-        "title": "Hello World"
+        "title": "world: hello"
       },
       {
         "command": "quicklinks.addLink",
-        "title": "Add Link"
+        "title": "links: add"
       },
       {
         "command": "quicklinks.printLinks",
-        "title": "Print Links"
+        "title": "links: print"
       },
       {
         "command": "quicklinks.resetLinks",
-        "title": "Reset Links"
+        "title": "links: reset"
       },
       {
         "command": "quicklinks.showLinks",
-        "title": "Show Links"
+        "title": "links: show"
       }
     ]
   },
