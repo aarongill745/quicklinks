@@ -33,6 +33,13 @@
         "command": "quicklinks.showLinks",
         "title": "links: show"
       }
+    ],
+    "keybindings": [
+     {
+        "command": "quicklinks.showLinks",
+        "key": "ctrl+ ctrlk+l",
+        "mac": "cmd+k cmd+l"
+      } 
     ]
   },
   "scripts": {
