@@ -14,10 +14,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "quicklinks.helloWorld",
-        "title": "world: hello"
-      },
-      {
         "command": "quicklinks.addLink",
         "title": "links: add"
       },
