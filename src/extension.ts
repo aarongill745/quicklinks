@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
     // We only want to actually retrieve these once at the start, but have them updated when we add/ delete.
     
     
-    const showLinks = vscode.commands.registerCommand('quicklinks.showLinks', async () => {  
+    const linksShow = vscode.commands.registerCommand('quicklinks.showLinks', async () => {  
         const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
         const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []);
         
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "quicklinks" is now active!');
 
-	const addLink = vscode.commands.registerCommand('quicklinks.addLink', () => {
+	const linksAdd = vscode.commands.registerCommand('quicklinks.addLink', () => {
 		console.log("Adding link");
 
 		const panel = vscode.window.createWebviewPanel(
@@ -79,19 +79,20 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
-    const printLinks = vscode.commands.registerCommand('quicklinks.printLinks', () => {
+    const linksPrint = vscode.commands.registerCommand('quicklinks.printLinks', () => {
         const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
         const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []); 
         console.log(globalLinks, workspaceLinks);
     });
 
     // This will be changed to a UI containing all global links + workspace links
-    const resetLinks = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
+    const linksReset = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
         context.globalState.update('myQuickLinks', []);
         context.workspaceState.update('myQuickLinks', []);
         console.log("All links have been deleted");
     });
-    context.subscriptions.push(showLinks);
+    const commands = [linksAdd, linksPrint, linksReset, linksShow]
+    context.subscriptions.push(...commands);
 }
 
 function getAddLinkWebview() {
@@ -103,7 +104,7 @@ function getAddLinkWebview() {
                 position: relative;
                 display: inline-block;
                 width: 40px;
-                height: 20px;
+                height: 20px;j
             }
 
             .switch input {
