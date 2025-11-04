@@ -55,26 +55,24 @@ export function activate(context: vscode.ExtensionContext) {
 		);
 		panel.webview.html = getAddLinkWebview();
 		panel.webview.onDidReceiveMessage((message) => {
-            switch (message.command) {
-                case 'submit':
-                    const newLink: QuickLink = {
-                        ...message.data,
-                        url: message.data.link,
-                        scope: message.scope
-                    };
-                    if (newLink.scope === 'global') {
-                        const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []); 
-                        globalLinks.push(newLink);
-                        context.globalState.update('myQuickLinks', globalLinks);
-                    } else {
-                        const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks',[]);
-                        workspaceLinks.push(newLink);
-                        context.workspaceState.update('myQuickLinks', workspaceLinks);
-                    }
-                    break;
-                case 'scopeChanged':
-                    console.log("scope has changed", message.scope);
-                    break;
+            if (message.command === 'submit') {
+                const newLink: QuickLink = {
+                    ...message.data,
+                    url: message.data.link,
+                    scope: message.scope
+                };
+
+                if (newLink.scope === 'global') {
+                    const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
+                    globalLinks.push(newLink);
+                    context.globalState.update('myQuickLinks', globalLinks);
+                } else {
+                    const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks',[]);
+                    workspaceLinks.push(newLink);
+                    context.workspaceState.update('myQuickLinks', workspaceLinks);
+                }
+
+                panel.dispose();
             }
 		});
 	});
@@ -91,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
         context.workspaceState.update('myQuickLinks', []);
         console.log("All links have been deleted");
     });
-    const commands = [linksAdd, linksPrint, linksReset, linksShow]
+    const commands = [linksAdd, linksPrint, linksReset, linksShow];
     context.subscriptions.push(...commands);
 }
 
@@ -104,7 +102,7 @@ function getAddLinkWebview() {
                 position: relative;
                 display: inline-block;
                 width: 40px;
-                height: 20px;j
+                height: 20px;
             }
 
             .switch input {
@@ -242,10 +240,17 @@ function getAddLinkWebview() {
                     Description (optional)
                     <textarea id="description" placeholder="Optional description"></textarea>
                 </label>
-                <label class="switch">
-                    <input type="checkbox" id="myToggle">
-                    <span class="slider"></span>
-                </label>        
+                <label>
+                    Scope
+                    <div class="toggle-container">
+                        <span class="toggle-label">Global</span>
+                        <label class="switch">
+                            <input type="checkbox" id="myToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-label">Workspace</span>
+                    </div>  
+                </label>
                 <button type="submit">Add Quick Link</button>
             </form>
         </div>
@@ -253,21 +258,17 @@ function getAddLinkWebview() {
             const vscode = acquireVsCodeApi();
             document.getElementById('itemForm').addEventListener('submit', (e) => {
                 e.preventDefault();
+                const toggle = document.getElementById('myToggle');
+                const scope = toggle.checked ? 'workspace' : 'global';
+
                 vscode.postMessage({
                     command: 'submit',
+                    scope: scope,
                     data: {
                         title: document.getElementById('title').value,
                         link: document.getElementById('link').value,
                         description: document.getElementById('description').value,
                     }
-                });
-            });
-            const toggle = document.getElementById('myToggle');
-  
-            toggle.addEventListener('change', (e) => {
-                vscode.postMessage({
-                command: 'toggleChanged',
-                value: e.target.checked
                 });
             });
         </script>
