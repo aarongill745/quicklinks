@@ -2,6 +2,8 @@
 
 Quicklinks lets you add bookmarks to specific URLs in VSCode which open browser tabs for you.
 
+**Disclaimer**: This is my first ever extension. If this concerns you, feel free to go through the source code yourself to see how it works [here](https://github.com/aarongill745/quicklinks).
+
 ## Usage
 
 ### TLDR:
