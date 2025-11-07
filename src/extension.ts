@@ -94,7 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function getAddLinkWebview(context: vscode.ExtensionContext): string {
-	const templatePath = path.join(context.extensionPath, 'src', 'webviews', 'addLink.html');
+	const templatePath = path.join(context.extensionPath, 'dist', 'webviews', 'addLink.html');
 	return fs.readFileSync(templatePath, 'utf8');
 }
 // This method is called when your extension is deactivated
