@@ -2,7 +2,7 @@
   "name": "quicklinks",
   "displayName": "QuickLinks",
   "description": "Access links quickly via vscode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "gillileo",
   "engines": {
     "vscode": "^1.105.0"
