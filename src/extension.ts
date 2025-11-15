@@ -89,6 +89,10 @@ export function activate(context: vscode.ExtensionContext) {
         context.workspaceState.update('myQuickLinks', []);
         console.log("All links have been deleted");
     });
+
+    const linksEdit = vscode.commands.registerCommand('quicklinks.editLinks', () => {
+        return;
+    });
     const commands = [linksAdd, linksPrint, linksReset, linksShow];
     context.subscriptions.push(...commands);
 }
