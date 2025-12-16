@@ -1,0 +1,1 @@
+This directory contains useful utils functions that do not have a better place to be stored.
