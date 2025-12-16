@@ -10,9 +10,9 @@ import * as vscode from 'vscode';
 export function activate(context: vscode.ExtensionContext) {
     // We only want to actually retrieve these once at the start, but have them updated when we add/ delete.
     
-    
+    // linksShow displays all available links to the user.
     const linksShow = vscode.commands.registerCommand('quicklinks.showLinks', async () => {  
-        const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
+        const globalLinks = context.globalState.get<QuickLink[]>('myQsuickLinks', []);
         const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []);
         
         const items: (vscode.QuickPickItem & { link?: string })[] = [
@@ -31,10 +31,13 @@ export function activate(context: vscode.ExtensionContext) {
                 link: link.url}))
         ];
         
+        // selected is the link that the user has chosen from the quickpick.
         const selected = await vscode.window.showQuickPick(items, {
             matchOnDetail: true,
             matchOnDescription: true,
         });
+
+        // Opens new browser tab to selected url.
         if (selected && selected.link) {
            vscode.env.openExternal(vscode.Uri.parse(selected.link));
         };
@@ -44,6 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "quicklinks" is now active!');
 
+    // linksAdd adds a link to the registry, it opens a form via webview.
 	const linksAdd = vscode.commands.registerCommand('quicklinks.addLink', () => {
 		console.log("Adding link");
 
@@ -77,22 +81,22 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
+    // THIS IS A DEBUGGING FUNCTION
+    // linksPrint prints all available links to the terminal.
     const linksPrint = vscode.commands.registerCommand('quicklinks.printLinks', () => {
         const globalLinks = context.globalState.get<QuickLink[]>('myQuickLinks', []);
         const workspaceLinks = context.workspaceState.get<QuickLink[]>('myQuickLinks', []); 
         console.log(globalLinks, workspaceLinks);
     });
 
-    // This will be changed to a UI containing all global links + workspace links
+    // THIS IS A DEBUGGING FUNCTION
+    // linksReset resets all links.
     const linksReset = vscode.commands.registerCommand('quicklinks.resetLinks', () => {
         context.globalState.update('myQuickLinks', []);
         context.workspaceState.update('myQuickLinks', []);
         console.log("All links have been deleted");
     });
 
-    const linksEdit = vscode.commands.registerCommand('quicklinks.editLinks', () => {
-        return;
-    });
     const commands = [linksAdd, linksPrint, linksReset, linksShow];
     context.subscriptions.push(...commands);
 }
