@@ -3,9 +3,10 @@ import { registerLinksShow } from './commands/linksShow';
 import { registerLinksAdd } from './commands/linksAdd';
 import { registerLinksPrint } from './commands/linksPrint';
 import { registerLinksReset } from './commands/linksReset';
+import { logger } from './utils/debugging';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "quicklinks" is now active!');
+	logger.info('QuickLinks extension activated successfully');
 
 	context.subscriptions.push(
 		registerLinksShow(context),
@@ -15,4 +16,6 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-export function deactivate() {}
+export function deactivate() {
+	logger.dispose();
+}
